@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>8253/8254 Timer Interface - Interactive Demo with 3D</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 90%;
+      max-width: 900px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin: 30px 0;
+      transition: all 0.3s ease-in-out;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+    .section {
+      display: none;
+      animation: fadeIn 0.6s ease-in;
+    }
+    .section.active {
+      display: block;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    model-viewer {
+      width: 100%;
+      height: 400px;
+      margin: 20px auto;
+      border-radius: 10px;
+      background: #eaeaea;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table, th, td {
+      border: 1px solid #aaa;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    ul {
+      margin-top: 10px;
+    }
+    pre {
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    a.download-link {
+      display: inline-block;
+      margin-top: 10px;
+      text-align: center;
+      text-decoration: none;
+      background: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+    a.download-link:hover {
+      background: #218838;
+    }
+    .image-gallery {
+      display: flex;
+      overflow-x: auto;
+      gap: 20px;
+      scroll-snap-type: x mandatory;
+      padding: 10px 0;
+    }
+    .image-gallery img {
+      flex: 0 0 auto;
+      width: 350px;
+      height: auto;
+      object-fit: contain;
+      border-radius: 8px;
+      cursor: pointer;
+      scroll-snap-align: start;
+      transition: transform 0.2s;
+    }
+    .image-gallery img:hover {
+      transform: scale(1.05);
+    }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+    }
+    .modal-content {
+      margin: 5% auto;
+      display: block;
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 10px;
+    }
+    .modal-close {
+      position: absolute;
+      top: 20px; right: 40px;
+      font-size: 30px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Intel 8253 / 8254 Timer Interface</h1>
+
+  <div class="container">
+    <div class="section active">
+      <h2>🔶 Introduction</h2>
+      <h2>Introduction to Intel 8253 and 8254</h2>
+    <ul>
+        <li>🕒 Intel 8253 and 8254 are Programmable Interval Timers (PITs) developed in the late 1970s.</li>
+        <li>🤝 Used with microprocessors like 8085 and 8086.</li>
+        <li>🎯 Functions include generating time delays, producing square waves, counting external events, and creating timing signals.</li>
+        <li>⚙️ Applications: Real-time clocks, event counters, baud rate generators, and interrupt generation.</li>
+        <li>🧩 They are programmable I/O peripheral devices, connected to the CPU via the system bus.</li>
+        <li>🔢 Each chip has three independent 16-bit counters, programmable in different modes.</li>
+        <li>🚀 The 8254 is an improved version of the 8253, supporting higher clock speeds and better read/write operations.</li>
+    </ul>
+  </div>
+
+    <div class="section">
+      <h2>🔶 Difference Between 8253 and 8254</h2>
+      <table>
+        <tr><th>Feature</th><th>8253</th><th>8254</th></tr>
+        <tr><td>Max Clock</td><td>2.6 MHz</td><td>10 MHz</td></tr>
+        <tr><td>Counter Size</td><td>16-bit</td><td>16-bit</td></tr>
+        <tr><td>Package</td><td>24-pin DIP</td><td>24-pin DIP</td></tr>
+        <tr><td>Compatibility</td><td>8085, 8086</td><td>8086 (faster)</td></tr>
+        <tr><td>Added Features</td><td>–</td><td>Faster, enhanced</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>🔶 Block Diagram of 8253/8254</h2>
+      <div class="image-gallery">
+        <img src="B8253.webp" alt="Block Diagram">
+        <img src="B8254.webp" alt="Block Diagram">
+      </div>
+      
+  <h2>📊 8253 vs 8254 Block Diagram Related Comparison</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>8253</th>
+        <th>8254</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Number of Counters</td>
+        <td>3 Independent 16-bit Counters</td>
+        <td>3 Independent 16-bit Counters</td>
+      </tr>
+      <tr class="highlight">
+        <td>Data Bus Buffer</td>
+        <td>8-bit bidirectional buffer</td>
+        <td>8-bit bidirectional buffer</td>
+      </tr>
+      <tr>
+        <td>Control Word Register</td>
+        <td>1 Common Control Word Register</td>
+        <td>Same as 8253</td>
+      </tr>
+      <tr class="highlight">
+        <td>Read-Back Command</td>
+        <td>Not available</td>
+        <td>Available (to latch count/status)</td>
+      </tr>
+      <tr>
+        <td>Operating Modes</td>
+        <td>6 Modes (Mode 0–5)</td>
+        <td>Same 6 Modes</td>
+      </tr>
+      <tr class="highlight">
+        <td>Input Clock Frequency Support</td>
+        <td>Up to ~2.6 MHz</td>
+        <td>Up to ~10 MHz</td>
+      </tr>
+      <tr>
+        <td>BCD Operation</td>
+        <td>Supported</td>
+        <td>Supported</td>
+      </tr>
+      <tr class="highlight">
+        <td>Block Diagram Structure</td>
+        <td>3 counters, control logic, data buffer</td>
+        <td>Same structure but improved internal logic</td>
+      </tr>
+    </tbody>
+  </table>
+    </div>
+
+    <div class="section">
+      <h2>🔶 Pin Diagram (24-Pin DIP)</h2>
+      <div class="image-gallery">
+        <img src="8253.png" alt="Pin Diagram">
+        <img src="8254.jpeg" alt="Pin Diagram">
+      </div>
+      <h2>📌 8253 vs 8254 Pin Description and Differences</h2>
+
+<table style="width:100%; border-collapse:collapse; font-family:Arial, sans-serif; margin-top:10px;">
+  <thead>
+    <tr style="background-color:#3498db; color:white;">
+      <th style="padding:8px; border:1px solid #ccc;">Pin No</th>
+      <th style="padding:8px; border:1px solid #ccc;">Pin Name</th>
+      <th style="padding:8px; border:1px solid #ccc;">Description</th>
+      <th style="padding:8px; border:1px solid #ccc;">8253</th>
+      <th style="padding:8px; border:1px solid #ccc;">8254</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- Data Bus Pins -->
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">1–8</td>
+      <td style="padding:8px; border:1px solid #ccc;">D0–D7</td>
+      <td style="padding:8px; border:1px solid #ccc;">8-bit Bidirectional Data Bus</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <!-- Control Pins -->
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">22</td>
+      <td style="padding:8px; border:1px solid #ccc;">RD (Read)</td>
+      <td style="padding:8px; border:1px solid #ccc;">Enables data from selected counter to data bus</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">23</td>
+      <td style="padding:8px; border:1px solid #ccc;">WR (Write)</td>
+      <td style="padding:8px; border:1px solid #ccc;">Loads control word or count into counter</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">21</td>
+      <td style="padding:8px; border:1px solid #ccc;">CS (Chip Select)</td>
+      <td style="padding:8px; border:1px solid #ccc;">Enables communication with CPU</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <!-- Address Pins -->
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">19, 20</td>
+      <td style="padding:8px; border:1px solid #ccc;">A0, A1</td>
+      <td style="padding:8px; border:1px solid #ccc;">Selects one of the counters or control register</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <!-- Counter Inputs -->
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">9, 15, 19</td>
+      <td style="padding:8px; border:1px solid #ccc;">CLK0, CLK1, CLK2</td>
+      <td style="padding:8px; border:1px solid #ccc;">Clock Input for each Counter</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">11, 13, 17</td>
+      <td style="padding:8px; border:1px solid #ccc;">GATE0, GATE1, GATE2</td>
+      <td style="padding:8px; border:1px solid #ccc;">Enable/Trigger signal for counters</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">10, 14, 18</td>
+      <td style="padding:8px; border:1px solid #ccc;">OUT0, OUT1, OUT2</td>
+      <td style="padding:8px; border:1px solid #ccc;">Outputs from each counter</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <!-- Power Supply -->
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">12</td>
+      <td style="padding:8px; border:1px solid #ccc;">GND</td>
+      <td style="padding:8px; border:1px solid #ccc;">Ground</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <tr>
+      <td style="padding:8px; border:1px solid #ccc;">24</td>
+      <td style="padding:8px; border:1px solid #ccc;">VCC</td>
+      <td style="padding:8px; border:1px solid #ccc;">+5V Power Supply</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+      <td style="padding:8px; border:1px solid #ccc;">✔</td>
+    </tr>
+
+    <!-- Highlighted Difference -->
+    <tr style="background-color:#ffeaa7;">
+      <td style="padding:8px; border:1px solid #ccc;">(Internally)</td>
+      <td style="padding:8px; border:1px solid #ccc;">Read-Back Command</td>
+      <td style="padding:8px; border:1px solid #ccc;">Allows reading count and status without affecting operation</td>
+      <td style="padding:8px; border:1px solid #ccc;">❌ Not Available</td>
+      <td style="padding:8px; border:1px solid #ccc;">✅ Available</td>
+    </tr>
+
+  </tbody>
+</table>
+
+    </div>
+
+    <div class="section">
+      <h2>🔶 3D/360° View</h2>
+      <model-viewer src="AT89S8253-24PU.glb"
+                    alt="8253/8254 Timer IC"
+                    auto-rotate
+                    camera-controls
+                    ar
+                    background-color="#f4f4f4">
+      </model-viewer>
+      <a class="download-link" href="AT89S8253-24PU.glb" download>⬇️ Download 3D Model</a>
+    </div>
+
+    <div class="section">
+      <h2>🔶 Operating Modes (0-5)</h2>
+      <table>
+        <tr><th>Mode</th><th>Name</th><th>Description</th></tr>
+        <tr><td>0</td><td>Interrupt on Terminal Count</td><td>Generates interrupt after count reaches 0</td></tr>
+        <tr><td>1</td><td>One-Shot</td><td>Pulses on GATE trigger</td></tr>
+        <tr><td>2</td><td>Rate Generator</td><td>Used in baud rate generation</td></tr>
+        <tr><td>3</td><td>Square Wave Generator</td><td>Generates square wave</td></tr>
+        <tr><td>4</td><td>Software Triggered Strobe</td><td>Pulses once after count</td></tr>
+        <tr><td>5</td><td>Hardware Triggered Strobe</td><td>Triggered by GATE signal</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2 style="font-family:Arial, sans-serif; color:#2c3e50;">🔶 Applications of 8253 and 8254 Programmable Timers</h2>
+
+<div style="display:flex; flex-wrap:wrap; gap:20px; font-family:Arial, sans-serif; margin-top:15px;">
+
+  <!-- Application 1: Time Delay -->
+  <div style="flex:1; min-width:230px; max-width:300px; border:1px solid #ccc; border-radius:8px; padding:15px; background:#fdfefe;">
+    <img src="https://cdn-icons-png.flaticon.com/512/3542/3542390.png" alt="Time Delay" style="width:60px;">
+    <h3 style="color:#2980b9;">⏲️ Time Delay Generation</h3>
+    <p>Used to create delays in systems like LED blinkers, washing machines, or countdown timers.</p>
+    <strong>Example:</strong> Delay between red and green light in a traffic signal.
+  </div>
+
+  <!-- Application 2: Event Counting -->
+  <div style="flex:1; min-width:230px; max-width:300px; border:1px solid #ccc; border-radius:8px; padding:15px; background:#fdfefe;">
+    <img src="https://cdn-icons-png.flaticon.com/512/2002/2002711.png" alt="Event Counter" style="width:60px;">
+    <h3 style="color:#2980b9;">🔢 Event Counting</h3>
+    <p>Counts external signals like button presses, machine rotations, or visitor entries.</p>
+    <strong>Example:</strong> Counting the number of bottles on a conveyor belt.
+  </div>
+
+  <!-- Application 3: Waveform Generation -->
+  <div style="flex:1; min-width:230px; max-width:300px; border:1px solid #ccc; border-radius:8px; padding:15px; background:#fdfefe;">
+    <img src="https://cdn-icons-png.flaticon.com/512/5588/5588661.png" alt="Waveform Generator" style="width:60px;">
+    <h3 style="color:#2980b9;">🔉 Waveform Generation</h3>
+    <p>Generates square waves for buzzer sounds or speaker beeps using different frequencies.</p>
+    <strong>Example:</strong> Producing a beep sound when pressing a button on a microwave.
+  </div>
+
+  <!-- Application 4: Baud Rate Generation -->
+  <div style="flex:1; min-width:230px; max-width:300px; border:1px solid #ccc; border-radius:8px; padding:15px; background:#fdfefe;">
+    <img src="https://cdn-icons-png.flaticon.com/512/3771/3771320.png" alt="Baud Rate" style="width:60px;">
+    <h3 style="color:#2980b9;">📡 Baud Rate Generation</h3>
+    <p>Used in UART/serial communication to set data transmission speed between devices.</p>
+    <strong>Example:</strong> Setting data rate in communication between Arduino and PC.
+  </div>
+
+  <!-- Application 5: Digital Clocks & Timers -->
+  <div style="flex:1; min-width:230px; max-width:300px; border:1px solid #ccc; border-radius:8px; padding:15px; background:#fdfefe;">
+    <img src="https://cdn-icons-png.flaticon.com/512/2917/2917999.png" alt="Digital Clock" style="width:60px;">
+    <h3 style="color:#2980b9;">⏰ Digital Clocks & Timers</h3>
+    <p>Used to maintain real-time in clocks, alarms, or automatic timers.</p>
+    <strong>Example:</strong> Digital wall clocks or time displays in railway stations.
+  </div>
+
+</div>
+
+    </div>
+
+    <div class="section">
+      <h2>🔶 Sample Program</h2>
+      <pre>
+MOV AL, 36H        
+OUT 43H, AL        
+MOV AL, 0FFH       
+OUT 40H, AL        
+MOV AL, 0FFH       
+OUT 40H, AL        
+      </pre>
+    </div>
+
+    <div class="section">
+  <h2>🔶 Conclusion</h2>
+  <p>The 8253/8254 timer interface is essential in embedded systems. It provides precise timing, waveform control, and supports multiple operating modes useful in a variety of real-time applications.</p>
+
+  <h3 style="text-align:center; margin-top: 20px;">📥 Scan QR to Download ZIP</h3>
+  <div style="text-align:center;">
+    <img 
+      src="QR_Code.png"
+      alt="QR Code to download ZIP"
+    />
+    <p><a href="https://drive.google.com/uc?export=download&id=1W9j9AZ8ftBBtYdKO45lyGYvPQSuu3K0p" class="download-link">⬇️ Or Click Here to Download ZIP</a></p>
+  </div>
+</div>
+
+
+    <div class="nav-buttons">
+      <button onclick="prevSection()">⬅️ Previous</button>
+      <button onclick="nextSection()">Next ➡️</button>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div id="imageModal" class="modal" onclick="closeModal()">
+    <span class="modal-close" onclick="closeModal()">×</span>
+    <img class="modal-content" id="modalImage" />
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    let current = 0;
+    const sections = document.querySelectorAll(".section");
+    function showSection(index) {
+      sections.forEach((sec, i) => {
+        sec.classList.remove("active");
+        if (i === index) sec.classList.add("active");
+      });
+    }
+    function nextSection() {
+      if (current < sections.length - 1) {
+        current++;
+        showSection(current);
+      }
+    }
+    function prevSection() {
+      if (current > 0) {
+        current--;
+        showSection(current);
+      }
+    }
+
+    // Image modal view
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+
+    document.querySelectorAll('.image-gallery img').forEach(img => {
+      img.addEventListener('click', () => {
+        modal.style.display = "block";
+        modalImg.src = img.src;
+      });
+    });
+
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+  </script>
+
+</body>
+</html>
